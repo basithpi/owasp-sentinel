@@ -11,10 +11,11 @@ python-multipart==0.0.9
 starlette==0.36.3
 
 # -----------------------------------------------------------------------------
-# Database - SQLAlchemy + asyncpg + Alembic
+# Database - SQLAlchemy + asyncpg + psycopg2 (sync for Celery) + Alembic
 # -----------------------------------------------------------------------------
 sqlalchemy[asyncio]==2.0.27
 asyncpg==0.29.0
+psycopg2-binary==2.9.9
 alembic==1.13.1
 greenlet==3.0.3
 
