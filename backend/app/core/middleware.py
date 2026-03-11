@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import threading
 import time
 import uuid
 from collections import defaultdict
@@ -14,7 +15,10 @@ from app.core.logging import get_logger
 
 logger = get_logger(__name__)
 
+# NOTE: In-memory rate limiting works only for single-worker deployments.
+# For multi-worker setups use a Redis-backed implementation instead.
 _request_counts: dict = defaultdict(list)
+_rate_limit_lock = threading.Lock()
 RATE_LIMIT_REQUESTS = 100
 RATE_LIMIT_WINDOW = 60
 
@@ -36,16 +40,17 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         client_ip = request.client.host if request.client else "unknown"
         now = time.time()
         window_start = now - RATE_LIMIT_WINDOW
-        _request_counts[client_ip] = [
-            t for t in _request_counts[client_ip] if t > window_start
-        ]
-        if len(_request_counts[client_ip]) >= RATE_LIMIT_REQUESTS:
-            from fastapi.responses import JSONResponse
-            return JSONResponse(
-                status_code=429,
-                content={"detail": "Rate limit exceeded. Try again later."},
-            )
-        _request_counts[client_ip].append(now)
+        with _rate_limit_lock:
+            _request_counts[client_ip] = [
+                t for t in _request_counts[client_ip] if t > window_start
+            ]
+            if len(_request_counts[client_ip]) >= RATE_LIMIT_REQUESTS:
+                from fastapi.responses import JSONResponse
+                return JSONResponse(
+                    status_code=429,
+                    content={"detail": "Rate limit exceeded. Try again later."},
+                )
+            _request_counts[client_ip].append(now)
         return await call_next(request)
 
 
