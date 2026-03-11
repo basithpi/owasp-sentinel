@@ -86,7 +86,7 @@ services:
   celery-beat:
     <<: *backend-common
     container_name: sentinel-celery-beat
-    command: celery -A app.tasks.celery_app beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    command: celery -A app.tasks.celery_app beat --loglevel=info
     volumes:
       - ./backend:/app
     depends_on:
