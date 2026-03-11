@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ report.name }} – OWASP Sentinel</title>
+  <style>
+    /* ------------------------------------------------------------------ */
+    /* Base                                                                 */
+    /* ------------------------------------------------------------------ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 13px;
+      color: #1a1a2e;
+      line-height: 1.5;
+      background: #ffffff;
+    }
+    a { color: #0f3460; text-decoration: none; }
+    code {
+      font-family: "Courier New", monospace;
+      background: #f4f4f4;
+      padding: 1px 4px;
+      border-radius: 3px;
+      font-size: 11px;
+      word-break: break-all;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 8px;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-size: 11px;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Cover page                                                           */
+    /* ------------------------------------------------------------------ */
+    .cover {
+      height: 100vh;
+      background: linear-gradient(135deg, #0f3460 0%, #16213e 60%, #1a1a2e 100%);
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 60px;
+      page-break-after: always;
+    }
+    .cover .logo {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: 0.9;
+      margin-bottom: 60px;
+    }
+    .cover h1 { font-size: 36px; font-weight: 800; margin-bottom: 16px; }
+    .cover .subtitle { font-size: 16px; opacity: 0.75; margin-bottom: 8px; }
+    .cover .meta { margin-top: 60px; font-size: 13px; opacity: 0.65; }
+
+    /* Severity badge on cover */
+    .risk-summary { display: flex; gap: 24px; margin-top: 40px; }
+    .risk-box {
+      background: rgba(255,255,255,0.12);
+      border-radius: 8px;
+      padding: 14px 20px;
+      text-align: center;
+      min-width: 80px;
+    }
+    .risk-box .count { font-size: 28px; font-weight: 800; }
+    .risk-box .label { font-size: 11px; text-transform: uppercase; opacity: 0.8; margin-top: 2px; }
+    .risk-box.critical .count { color: #ff4757; }
+    .risk-box.high     .count { color: #ff6b35; }
+    .risk-box.medium   .count { color: #ffa502; }
+    .risk-box.low      .count { color: #2ed573; }
+    .risk-box.info     .count { color: #70a1ff; }
+
+    /* ------------------------------------------------------------------ */
+    /* Layout                                                               */
+    /* ------------------------------------------------------------------ */
+    .container { max-width: 900px; margin: 0 auto; padding: 40px 50px; }
+    h2 {
+      font-size: 20px;
+      color: #0f3460;
+      margin: 32px 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #e8eaf6;
+    }
+    h3 { font-size: 15px; color: #16213e; margin: 20px 0 8px; }
+
+    /* ------------------------------------------------------------------ */
+    /* Summary table                                                        */
+    /* ------------------------------------------------------------------ */
+    .info-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+    .info-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #e8eaf6;
+      vertical-align: top;
+    }
+    .info-table td:first-child {
+      width: 180px;
+      font-weight: 600;
+      color: #555;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Severity badges                                                      */
+    /* ------------------------------------------------------------------ */
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge.critical { background: #ffeaea; color: #c0392b; }
+    .badge.high     { background: #fff3e0; color: #e65100; }
+    .badge.medium   { background: #fffde7; color: #f57f17; }
+    .badge.low      { background: #e8f5e9; color: #2e7d32; }
+    .badge.info     { background: #e3f2fd; color: #1565c0; }
+
+    /* ------------------------------------------------------------------ */
+    /* Finding cards                                                        */
+    /* ------------------------------------------------------------------ */
+    .finding-card {
+      border: 1px solid #e8eaf6;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      overflow: hidden;
+      page-break-inside: avoid;
+    }
+    .finding-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 14px 18px;
+      background: #f8f9ff;
+      border-bottom: 1px solid #e8eaf6;
+      gap: 12px;
+    }
+    .finding-header .title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1a1a2e;
+      flex: 1;
+    }
+    .finding-body { padding: 14px 18px; }
+    .finding-body .field { margin-bottom: 10px; }
+    .finding-body .field-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 3px;
+    }
+    .finding-body .field-value { color: #333; word-break: break-word; }
+
+    /* ------------------------------------------------------------------ */
+    /* Footer                                                               */
+    /* ------------------------------------------------------------------ */
+    .footer {
+      margin-top: 60px;
+      padding-top: 16px;
+      border-top: 1px solid #e8eaf6;
+      font-size: 11px;
+      color: #aaa;
+      text-align: center;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Print / PDF                                                          */
+    /* ------------------------------------------------------------------ */
+    @media print {
+      .cover { page-break-after: always; }
+      .finding-card { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ======================================================================
+     Cover Page
+     ====================================================================== -->
+<div class="cover">
+  <div class="logo">⚔ OWASP Sentinel v3</div>
+  <h1>{{ report.name }}</h1>
+  <div class="subtitle">Security Assessment Report</div>
+
+  {% if target %}
+  <div class="subtitle">Target: {{ target.name }} — {{ target.url }}</div>
+  {% endif %}
+
+  <div class="risk-summary">
+    <div class="risk-box critical">
+      <div class="count">{{ severity_counts.critical }}</div>
+      <div class="label">Critical</div>
+    </div>
+    <div class="risk-box high">
+      <div class="count">{{ severity_counts.high }}</div>
+      <div class="label">High</div>
+    </div>
+    <div class="risk-box medium">
+      <div class="count">{{ severity_counts.medium }}</div>
+      <div class="label">Medium</div>
+    </div>
+    <div class="risk-box low">
+      <div class="count">{{ severity_counts.low }}</div>
+      <div class="label">Low</div>
+    </div>
+    <div class="risk-box info">
+      <div class="count">{{ severity_counts.info }}</div>
+      <div class="label">Info</div>
+    </div>
+  </div>
+
+  <div class="meta">
+    <div>Generated: {{ generated_at }}</div>
+    <div>Total findings: {{ findings | length }}</div>
+    {% if scan %}
+    <div>Scan: {{ scan.name }} ({{ scan.status }})</div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ======================================================================
+     Report Body
+     ====================================================================== -->
+<div class="container">
+
+  <!-- Executive Summary -->
+  <h2>Executive Summary</h2>
+  <table class="info-table">
+    <tr>
+      <td>Report Name</td>
+      <td>{{ report.name }}</td>
+    </tr>
+    <tr>
+      <td>Generated</td>
+      <td>{{ generated_at }}</td>
+    </tr>
+    {% if target %}
+    <tr>
+      <td>Target</td>
+      <td>{{ target.name }} ({{ target.url }})</td>
+    </tr>
+    {% endif %}
+    {% if scan %}
+    <tr>
+      <td>Scan</td>
+      <td>{{ scan.name }}</td>
+    </tr>
+    <tr>
+      <td>Scan Status</td>
+      <td>{{ scan.status }}</td>
+    </tr>
+    <tr>
+      <td>Scan Started</td>
+      <td>{{ scan.started_at or "—" }}</td>
+    </tr>
+    <tr>
+      <td>Scan Completed</td>
+      <td>{{ scan.completed_at or "—" }}</td>
+    </tr>
+    {% endif %}
+    <tr>
+      <td>Total Findings</td>
+      <td><strong>{{ findings | length }}</strong></td>
+    </tr>
+  </table>
+
+  <!-- Findings by Severity -->
+  <h2>Findings</h2>
+
+  {% set severities = ["critical", "high", "medium", "low", "info"] %}
+  {% for sev in severities %}
+    {% set sev_findings = findings | selectattr("severity", "equalto", sev) | list %}
+    {% if sev_findings %}
+    <h3>
+      <span class="badge {{ sev }}">{{ sev }}</span>
+      — {{ sev_findings | length }} finding{% if sev_findings | length != 1 %}s{% endif %}
+    </h3>
+
+    {% for finding in sev_findings %}
+    <div class="finding-card">
+      <div class="finding-header">
+        <div class="title">{{ finding.title }}</div>
+        <span class="badge {{ finding.severity }}">{{ finding.severity }}</span>
+      </div>
+      <div class="finding-body">
+
+        {% if finding.url %}
+        <div class="field">
+          <div class="field-label">URL</div>
+          <div class="field-value"><code>{{ finding.url }}</code></div>
+        </div>
+        {% endif %}
+
+        {% if finding.description %}
+        <div class="field">
+          <div class="field-label">Description</div>
+          <div class="field-value">{{ finding.description }}</div>
+        </div>
+        {% endif %}
+
+        {% if finding.owasp_category %}
+        <div class="field">
+          <div class="field-label">OWASP Category</div>
+          <div class="field-value">{{ finding.owasp_category }}</div>
+        </div>
+        {% endif %}
+
+        {% if finding.cwe_id %}
+        <div class="field">
+          <div class="field-label">CWE</div>
+          <div class="field-value">CWE-{{ finding.cwe_id }}</div>
+        </div>
+        {% endif %}
+
+        {% if finding.cvss_score %}
+        <div class="field">
+          <div class="field-label">CVSS Score</div>
+          <div class="field-value">{{ finding.cvss_score }}</div>
+        </div>
+        {% endif %}
+
+        {% if finding.parameter %}
+        <div class="field">
+          <div class="field-label">Parameter</div>
+          <div class="field-value"><code>{{ finding.parameter }}</code></div>
+        </div>
+        {% endif %}
+
+        {% if finding.payload_used %}
+        <div class="field">
+          <div class="field-label">Payload</div>
+          <div class="field-value"><code>{{ finding.payload_used }}</code></div>
+        </div>
+        {% endif %}
+
+        {% if finding.evidence %}
+        <div class="field">
+          <div class="field-label">Evidence</div>
+          <div class="field-value"><pre>{{ finding.evidence }}</pre></div>
+        </div>
+        {% endif %}
+
+        {% if finding.remediation %}
+        <div class="field">
+          <div class="field-label">Remediation</div>
+          <div class="field-value">{{ finding.remediation }}</div>
+        </div>
+        {% endif %}
+
+        {% if finding.tool_name %}
+        <div class="field">
+          <div class="field-label">Detected by</div>
+          <div class="field-value">{{ finding.tool_name }}</div>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+  {% endfor %}
+
+  {% if not findings %}
+  <p style="color:#666; font-style:italic;">No findings recorded for this report.</p>
+  {% endif %}
+
+  <!-- Footer -->
+  <div class="footer">
+    OWASP Sentinel v3 — Automated Security Assessment Platform<br />
+    This report was generated automatically. Results should be validated by a qualified security professional.
+  </div>
+
+</div>
+</body>
+</html>
