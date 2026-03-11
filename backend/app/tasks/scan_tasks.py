@@ -21,12 +21,12 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 _TOOL_TASK_MAP: Dict[str, str] = {
-    "nuclei": "app.tasks.tool_tasks.run_nuclei_scan",
-    "nmap": "app.tasks.tool_tasks.run_nmap_scan",
-    "sqlmap": "app.tasks.tool_tasks.run_sqlmap_scan",
-    "xsstrike": "app.tasks.tool_tasks.run_xsstrike_scan",
-    "subfinder": "app.tasks.tool_tasks.run_subfinder_scan",
-    "httpx": "app.tasks.tool_tasks.run_httpx_probe",
+    "nuclei": "tool_tasks.run_nuclei_scan",
+    "nmap": "tool_tasks.run_nmap_scan",
+    "sqlmap": "tool_tasks.run_sqlmap_scan",
+    "xsstrike": "tool_tasks.run_xsstrike_scan",
+    "subfinder": "tool_tasks.run_subfinder_scan",
+    "httpx": "tool_tasks.run_httpx_probe",
 }
 
 

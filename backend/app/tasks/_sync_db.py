@@ -14,9 +14,26 @@ from ..config import settings
 
 
 def _sync_db_url() -> str:
-    """Convert the async asyncpg URL to a sync psycopg2 URL."""
+    """Convert the async asyncpg URL to a sync psycopg2 URL.
+
+    Raises ``ValueError`` if the URL cannot be converted (e.g. a non-asyncpg
+    driver is already in use and no safe substitution is possible).
+    """
     url = settings.database_url
-    return url.replace("+asyncpg", "+psycopg2")
+    if "+asyncpg" in url:
+        return url.replace("+asyncpg", "+psycopg2")
+    if url.startswith("postgresql://") or url.startswith("postgres://"):
+        # Bare postgresql:// URL — inject the psycopg2 driver explicitly.
+        return url.replace("postgresql://", "postgresql+psycopg2://", 1).replace(
+            "postgres://", "postgresql+psycopg2://", 1
+        )
+    if "+psycopg2" in url:
+        # Already a psycopg2 URL — use as-is.
+        return url
+    raise ValueError(
+        f"Cannot derive a synchronous psycopg2 database URL from: {url!r}. "
+        "Set DATABASE_URL to a postgresql+asyncpg:// or postgresql:// URL."
+    )
 
 
 # Module-level engine — created once per worker process.

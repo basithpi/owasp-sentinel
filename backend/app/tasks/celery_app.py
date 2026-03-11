@@ -36,7 +36,7 @@ def create_celery_app() -> Celery:
         # Beat schedule for monitors
         beat_schedule={
             "run-continuous-monitors": {
-                "task": "app.tasks.monitor_tasks.run_continuous_monitors",
+                "task": "monitor_tasks.run_continuous_monitors",
                 "schedule": 300.0,  # Every 5 minutes
             },
         },
