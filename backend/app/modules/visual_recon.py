@@ -134,7 +134,7 @@ def _mmh3_32(data: bytes, seed: int = 0) -> int:
 def _pil_phash(img: Image.Image, hash_size: int = 8) -> int:
     """Compute a perceptual hash (pHash) using DCT approximation via PIL."""
     img = img.convert("L").resize(
-        (hash_size * 4, hash_size * 4), Image.Resampling.LANCZOS
+        (hash_size * 4, hash_size * 4), Image.Resampling.BILINEAR
     )
     pixels = list(img.getdata())
     n = hash_size * 4

@@ -261,7 +261,7 @@ class JWTSuite(BaseModule):
                 public_exponent=65537, key_size=2048, backend=default_backend()
             )
             pub_key = private_key.public_key()
-            pub_nums = pub_key.public_key().public_numbers() if hasattr(pub_key, "public_key") else pub_key.public_numbers()
+            pub_nums = pub_key.public_numbers()
 
             def _int_to_b64(n: int) -> str:
                 length = (n.bit_length() + 7) // 8
