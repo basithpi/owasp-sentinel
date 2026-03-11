@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import Boolean, Enum, String, Text
+from sqlalchemy import Boolean, DateTime, Enum, String, Text, func
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -28,8 +28,9 @@ class Payload(UUIDPrimaryKeyMixin, Base):
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
         nullable=False,
-        server_default="now()",
+        server_default=func.now(),
     )
 
     def __repr__(self) -> str:

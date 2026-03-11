@@ -72,14 +72,8 @@ class PaginationParams:
         self.limit = limit
 
 
-def get_pagination(
-    pagination: Annotated[PaginationParams, Depends(PaginationParams)],
-) -> PaginationParams:
-    return pagination
-
-
 # Type aliases for cleaner endpoint signatures
 CurrentUser = Annotated[User, Depends(get_current_active_user)]
 AdminUser = Annotated[User, Depends(require_admin)]
-Pagination = Annotated[PaginationParams, Depends(get_pagination)]
+Pagination = Annotated[PaginationParams, Depends(PaginationParams)]
 DB = Annotated[AsyncSession, Depends(get_db)]

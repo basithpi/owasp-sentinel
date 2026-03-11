@@ -1,11 +1,9 @@
 import uuid
 from typing import Optional
 
-import redis.asyncio as aioredis
 from fastapi import APIRouter, status
 from sqlalchemy import select
 
-from ...config import settings
 from ...core.dependencies import CurrentUser, DB, get_current_active_user
 from ...core.exceptions import ConflictError, NotFoundError, UnauthorizedError
 from ...core.security import (
@@ -42,10 +40,6 @@ def _token_pair(user: User) -> Token:
         access_token=create_access_token(data),
         refresh_token=create_refresh_token(data),
     )
-
-
-async def _get_redis() -> aioredis.Redis:
-    return await aioredis.from_url(settings.redis_url, decode_responses=True)
 
 
 # ---------------------------------------------------------------------------
