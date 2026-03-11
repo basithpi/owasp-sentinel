@@ -111,7 +111,6 @@ services:
     command: >
       celery -A app.worker.celery_app beat
       --loglevel=info
-      --scheduler django_celery_beat.schedulers:DatabaseScheduler
     volumes:
       - ./backend:/app
       - celery_beat_data:/var/run/celery
